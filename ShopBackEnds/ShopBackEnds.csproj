@@ -32,6 +32,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Dto\AnalyticsDTO\" />
+    <Folder Include="Data\Dto\CategoryDTO\" />
+    <Folder Include="Data\Dto\GoldHistoryDTO\" />
+    <Folder Include="Data\Dto\OrderDTO\" />
+    <Folder Include="Data\Dto\OrderItemDTO\" />
+    <Folder Include="Data\Dto\ProductDTO\" />
+    <Folder Include="Data\Dto\SaleRecordDTO\" />
+    <Folder Include="Data\Dto\UserDTO\" />
     <Folder Include="HelperClass\" />
     <Folder Include="Migration\" />
   </ItemGroup>
