@@ -2,6 +2,11 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using ShopBackEnd.HelperClass;
 using ShopBackEnd.HelperClass.JWT;
+using ShopBackEnd.Repository;
+using ShopBackEnd.Repository.Context;
+using ShopBackEnd.Repository.EFCoreRepositories;
+using ShopBackEnd.Service;
+using ShopBackEnd.Services;
 using ShopBackEnd.Validation.CartItemValidation;
 using ShopBackEnd.Validation.CartValidation;
 using ShopBackEnd.Validation.CategoryValidation;
@@ -11,9 +16,9 @@ using ShopBackEnd.Validation.ProductValidation;
 using ShopBackEnd.Validation.UserValidation;
 using ShopBackEnd.Validations;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,13 +45,65 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string 'SqlServer' not found.");
 }
 
-MigrationCode.RunMigrations(connectionString);
+//MigrationCode.RunMigrations(connectionString);
 
-
+builder.Services.AddDbContext<ShopDbContext>(options =>
+    options.UseSqlServer(connectionString));
+//
 builder.Services.AddHttpClient();
 builder.Configuration.AddUserSecrets<Program>();
+builder.Services.AddSingleton<GoldApiFetch>();
 //
 builder.Services.AddFluentValidationAutoValidation();
+//
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.AddScoped<IJwtService, JwtService>();
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidateAudience = true,
+        ValidAudience = jwtSettings.Audience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+builder.Services.AddAuthorization();
+
+//repositories
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IGoldHistoryRepository, GoldHistoryRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+builder.Services.AddScoped<IGoldPriceUpdateAllProductsRepository, GoldPriceUpdateAllProductsRepository>();
+builder.Services.AddScoped<ISaleRecordRepository, SaleRecordRepository>();
+
+//services
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IGoldHistoryService, GoldHistoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICartItemService, CartItemService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+builder.Services.AddScoped<ISaleRecordService, SaleRecordService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 //validation 
 builder.Services.AddScoped<CategoryIdValidation>();
