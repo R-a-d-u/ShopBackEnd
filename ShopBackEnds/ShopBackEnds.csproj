@@ -41,6 +41,7 @@
     <Folder Include="Data\Dto\SaleRecordDTO\" />
     <Folder Include="Data\Dto\UserDTO\" />
     <Folder Include="Migration\" />
+    <Folder Include="Repository\EFCoreRepositories\" />
     <Folder Include="Validation\UserValidation\EmailValidation\" />
   </ItemGroup>
 
