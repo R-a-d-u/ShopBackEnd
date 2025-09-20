@@ -16,7 +16,7 @@ using ShopBackEnd.Validation.ProductValidation;
 using ShopBackEnd.Validation.UserValidation;
 using ShopBackEnd.Validations;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -62,23 +62,10 @@ var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSetting
 var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = true,
-        ValidIssuer = jwtSettings.Issuer,
-        ValidateAudience = true,
-        ValidAudience = jwtSettings.Audience,
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
+    options.DefaultAuthenticateScheme = BearerTokenDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = BearerTokenDefaults.AuthenticationScheme;
 });
+
 builder.Services.AddAuthorization();
 
 //repositories
